@@ -6,7 +6,7 @@ var secret = 'secret'
 var jwt = require("jsonwebtoken");
 
 function Token() {
-    let expirationDate = Math.floor(Date.now() / 1000) + 15 * 30 //30 seconds from now
+    let expirationDate = Math.floor(Date.now() / 1000) + 15 * 3000 //30 seconds from now
     var token = jwt.sign({
         userID: schema.email,
         exp: expirationDate
@@ -79,13 +79,12 @@ module.exports={
     forgotPassword:(req,res)=>{
         schema.findOne({email:req.query.email.toLowerCase()})
         .then((success)=>{
-            console.log("aaaaaaaaaaaaaaa",success);
 					var transporter = nodemailer.createTransport({
 							        port: 25,
                                     service: 'gmail',
 									auth: {
 							        user: "satyam6418@gmail.com",
-									pass: "satyam123$"
+									pass: "*********"
 							}
 						 })
                  var mailOptions = {
@@ -145,7 +144,6 @@ module.exports={
         }
         schema.findOne({email:req.body.email.toLowerCase()})
         .then((success)=>{
-            console.log(success);
             if(success==null || success=='null'){
                return res.send({message:"User details not found",status:404});
             }
