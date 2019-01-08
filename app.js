@@ -5,6 +5,8 @@ const express = require('express');
       fs = require('fs');
       config= require('./config');
       control= require('./controller');
+      jwt= require('jsonwebtoken')
+      basicAuth = require('basic-auth')
 var db= config.db;
 var app= express();
 app.use(bodyParser.json({'limit':'100mb'}));
@@ -28,12 +30,52 @@ mongoose.connect(db ,{
      console.log("***Database is connected***");
 });
 
+
+function token1(req, res, next) {
+  var token = req.body.token || req.query.token || req.headers['authorization'];
+  if (token) {
+    jwt.verify(token, 'secret', function(err, decoded) {  
+           if (err) {
+        return res.json({ success: false, message: 'Failed to authenticate token.' });   
+          } else {
+        req.decoded = decoded;    
+        console.log(decoded)
+             next();
+      }
+    });
+  } else {
+    return res.status(403).send({ 
+        success: false, 
+        message: 'No token provided.' 
+    });
+  }
+};
+
+var auth = function (req, res, next) {
+  var user = basicAuth(req);
+  if (!user || !user.name || !user.pass) {
+    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+    res.sendStatus(401);
+    return;
+  }
+  if (user.name === 'amy' && user.pass === 'passwd123') {
+    next();
+  } else {
+    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+    res.sendStatus(401);
+    return;
+  }
+}
+ app.get("/auth", auth, function (req, res) {
+    res.send("This page is authenticated!")
+});
+
 app.post('/signup',control.signup);
-app.post('/login',control.login);
+app.post('/login',auth,control.login);
 app.get('/forgotPassword',control.forgotPassword);
 app.post('/changePassword',control.changePassword);
-app.post('/getUserProfile',control.getUserProfile);
-app.post('/updateUserProfile',control.updateUserProfile);
+app.post('/getUserProfile',token1,control.getUserProfile);
+app.post('/updateUserProfile',token1,control.updateUserProfile);
 
 
 

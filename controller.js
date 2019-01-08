@@ -5,15 +5,16 @@ var saltRounds=10;
 var secret = 'secret'
 var jwt = require("jsonwebtoken");
 
-function Token() {
-    let expirationDate = Math.floor(Date.now() / 1000) + 15 * 3000 //30 seconds from now
+function Token(userName) {
+    let expirationDate = Math.floor(Date.now() / 1000) + 1580 //30 seconds from now
     var token = jwt.sign({
-        userID: schema.email,
-        exp: expirationDate
+        userID: 123,
+        username  : userName,
     }, secret);
     console.log(token);
     return token;
 }
+
 
 module.exports={
     signup : (req,res)=>{
@@ -62,7 +63,7 @@ module.exports={
                return res.send({message:"Something went wrong",status:400,error:err})
                else {
                     if(resp=='true' || resp==true){
-                    const token=  Token();
+                        var token = Token(req.body.userName);
                       return res.send({message:"Successfully SignIn",status:200,result:success,token:token})
                     }else{
                       return res.send({message:"Password is incorrect",status:400})
@@ -139,9 +140,6 @@ module.exports={
 
 
     getUserProfile:(req,res)=>{
-        if(!req.body.email){
-            return res.send({message:"Please fill Email Address",status:400})
-        }
         schema.findOne({email:req.body.email.toLowerCase()})
         .then((success)=>{
             if(success==null || success=='null'){
@@ -161,7 +159,6 @@ module.exports={
                 $set:{
                     firstName: req.body.firstName,
                     lastName: req.body.lastName,
-                    email: req.body.email,
                     country: req.body.country
                 }},{new:true}    
         )
