@@ -67,7 +67,6 @@ var auth = function (req, res, next) {
   }
 }
  app.get("/auth", auth, function (req, res) {
-   console.log("This is for testing")
     res.send("This page is authenticated!")
 });
 
